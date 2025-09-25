@@ -48,7 +48,7 @@ export function Chat({ matchId, onBack }: ChatProps) {
   if (!messages) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -86,14 +86,14 @@ export function Chat({ matchId, onBack }: ChatProps) {
               <div
                 className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
                   message.senderId === messages[0]?.senderId
-                    ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white"
+                    ? "bg-primary text-primary-foreground"
                     : "bg-gray-100 text-gray-900"
                 }`}
               >
                 <p className="text-sm">{message.content}</p>
                 <p className={`text-xs mt-1 ${
                   message.senderId === messages[0]?.senderId
-                    ? "text-pink-100"
+                    ? "text-primary-foreground/80"
                     : "text-gray-500"
                 }`}>
                   {new Date(message.sentAt).toLocaleTimeString([], {
@@ -122,7 +122,7 @@ export function Chat({ matchId, onBack }: ChatProps) {
           <button
             type="submit"
             disabled={!newMessage.trim() || isSending}
-            className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 rounded-full font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-full font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSending ? "..." : "Send"}
           </button>

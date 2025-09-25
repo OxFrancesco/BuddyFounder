@@ -61,7 +61,7 @@ export function AiChat({ profileOwnerId, profileOwnerName, onBack }: AiChatProps
           </svg>
         </button>
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
             <span className="text-white text-sm font-bold">AI</span>
           </div>
           <div>
@@ -77,7 +77,7 @@ export function AiChat({ profileOwnerId, profileOwnerName, onBack }: AiChatProps
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">🤖</span>
             </div>
             <h3 className="text-lg font-semibold mb-2">
@@ -97,21 +97,21 @@ export function AiChat({ profileOwnerId, profileOwnerName, onBack }: AiChatProps
             >
               <div className="flex items-start space-x-2 max-w-xs lg:max-w-md">
                 {message.role === "assistant" && (
-                  <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-xs font-bold">AI</span>
                   </div>
                 )}
                 <div
                   className={`px-4 py-2 rounded-2xl ${
                     message.role === "user"
-                      ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white"
+                      ? "bg-primary text-primary-foreground"
                       : "bg-gray-100 text-gray-900"
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                   <p className={`text-xs mt-1 ${
                     message.role === "user"
-                      ? "text-pink-100"
+                      ? "text-primary-foreground/80"
                       : "text-gray-500"
                   }`}>
                     {new Date(message.timestamp).toLocaleTimeString([], {
@@ -128,7 +128,7 @@ export function AiChat({ profileOwnerId, profileOwnerName, onBack }: AiChatProps
         {isSending && (
           <div className="flex justify-start">
             <div className="flex items-start space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
                 <span className="text-white text-xs font-bold">AI</span>
               </div>
               <div className="bg-gray-100 px-4 py-2 rounded-2xl">
@@ -159,7 +159,7 @@ export function AiChat({ profileOwnerId, profileOwnerName, onBack }: AiChatProps
           <button
             type="submit"
             disabled={!newMessage.trim() || isSending}
-            className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 rounded-full font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-full font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSending ? "..." : "Send"}
           </button>

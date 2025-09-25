@@ -14,6 +14,12 @@ const applicationTables = {
     location: v.optional(v.string()),
     experience: v.string(), // "beginner", "intermediate", "expert"
     isActive: v.boolean(),
+    isComplete: v.optional(v.boolean()), // Track if profile setup is completed with required fields
+    // Social media fields
+    twitter: v.optional(v.string()),
+    discord: v.optional(v.string()),
+    linkedin: v.optional(v.string()),
+    portfolio: v.optional(v.string()),
   }).index("by_user", ["userId"]),
 
   swipes: defineTable({

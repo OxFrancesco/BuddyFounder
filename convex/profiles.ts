@@ -36,6 +36,10 @@ export const createProfile = mutation({
     lookingFor: v.string(),
     location: v.optional(v.string()),
     experience: v.string(),
+    twitter: v.optional(v.string()),
+    discord: v.optional(v.string()),
+    linkedin: v.optional(v.string()),
+    portfolio: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -61,7 +65,61 @@ export const createProfile = mutation({
       photos: [],
       location: args.location,
       experience: args.experience,
+      twitter: args.twitter,
+      discord: args.discord,
+      linkedin: args.linkedin,
+      portfolio: args.portfolio,
       isActive: true,
+      isComplete: true, // Mark as complete when created with all required fields
+    });
+  },
+});
+
+// Create incomplete profile during setup process
+export const createIncompleteProfile = mutation({
+  args: {
+    name: v.optional(v.string()),
+    bio: v.optional(v.string()),
+    skills: v.optional(v.array(v.string())),
+    interests: v.optional(v.array(v.string())),
+    lookingFor: v.optional(v.string()),
+    location: v.optional(v.string()),
+    experience: v.optional(v.string()),
+    twitter: v.optional(v.string()),
+    discord: v.optional(v.string()),
+    linkedin: v.optional(v.string()),
+    portfolio: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    // Check if profile already exists
+    const existingProfile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .unique();
+
+    if (existingProfile) {
+      throw new Error("Profile already exists");
+    }
+
+    return await ctx.db.insert("profiles", {
+      userId,
+      name: args.name || "",
+      bio: args.bio || "",
+      skills: args.skills || [],
+      interests: args.interests || [],
+      lookingFor: args.lookingFor || "",
+      photos: [],
+      location: args.location,
+      experience: args.experience || "",
+      twitter: args.twitter,
+      discord: args.discord,
+      linkedin: args.linkedin,
+      portfolio: args.portfolio,
+      isActive: true,
+      isComplete: false, // Mark as incomplete during setup
     });
   },
 });
@@ -75,6 +133,11 @@ export const updateProfile = mutation({
     lookingFor: v.optional(v.string()),
     location: v.optional(v.string()),
     experience: v.optional(v.string()),
+    twitter: v.optional(v.string()),
+    discord: v.optional(v.string()),
+    linkedin: v.optional(v.string()),
+    portfolio: v.optional(v.string()),
+    isComplete: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -95,6 +158,11 @@ export const updateProfile = mutation({
     if (args.lookingFor !== undefined) updates.lookingFor = args.lookingFor;
     if (args.location !== undefined) updates.location = args.location;
     if (args.experience !== undefined) updates.experience = args.experience;
+    if (args.twitter !== undefined) updates.twitter = args.twitter;
+    if (args.discord !== undefined) updates.discord = args.discord;
+    if (args.linkedin !== undefined) updates.linkedin = args.linkedin;
+    if (args.portfolio !== undefined) updates.portfolio = args.portfolio;
+    if (args.isComplete !== undefined) updates.isComplete = args.isComplete;
 
     await ctx.db.patch(profile._id, updates);
   },
@@ -119,20 +187,8 @@ export const addPhoto = mutation({
       .unique();
 
     if (!profile) {
-      console.warn("[profiles:addPhoto] Profile not found. Creating placeholder profile.", { userId });
-      await ctx.db.insert("profiles", {
-        userId,
-        name: "",
-        bio: "",
-        skills: [],
-        interests: [],
-        lookingFor: "",
-        photos: [args.storageId],
-        experience: "",
-        isActive: true,
-      });
-      console.log("[profiles:addPhoto] Placeholder profile created and photo added.");
-      return null;
+      console.error("[profiles:addPhoto] Profile not found. Cannot add photo without profile.");
+      throw new Error("Profile must be created before adding photos");
     }
 
     const updatedPhotos = [...profile.photos, args.storageId];

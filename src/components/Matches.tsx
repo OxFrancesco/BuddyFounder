@@ -12,7 +12,7 @@ export function Matches({ onSelectMatch }: MatchesProps) {
   if (!matches) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -44,7 +44,7 @@ export function Matches({ onSelectMatch }: MatchesProps) {
           >
             <div className="flex items-center space-x-4">
               {/* Profile Photo */}
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-pink-100 to-purple-100 flex-shrink-0">
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex-shrink-0">
                 {match.profile.photos.length > 0 ? (
                   <img
                     src={match.profile.photos[0].url || ""}
@@ -78,7 +78,7 @@ export function Matches({ onSelectMatch }: MatchesProps) {
                     {match.latestMessage.content}
                   </p>
                 ) : (
-                  <p className="text-sm text-pink-500 font-medium">
+                  <p className="text-sm text-primary font-medium">
                     Say hello! 👋
                   </p>
                 )}

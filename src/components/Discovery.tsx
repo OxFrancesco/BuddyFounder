@@ -17,7 +17,7 @@ export function Discovery({ onStartAiChat }: DiscoveryProps) {
   if (!profiles) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -100,7 +100,7 @@ export function Discovery({ onStartAiChat }: DiscoveryProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center">
+            <div className="w-full h-full bg-muted flex items-center justify-center">
               <div className="text-6xl">👤</div>
             </div>
           )}
@@ -122,7 +122,7 @@ export function Discovery({ onStartAiChat }: DiscoveryProps) {
           {/* AI Chat Button */}
           <button
             onClick={handleAiChat}
-            className="absolute top-4 right-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
+            className="absolute top-4 right-4 bg-primary hover:bg-primary/90 text-primary-foreground p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
             title="Chat with AI"
           >
             <div className="w-6 h-6 flex items-center justify-center">
@@ -155,7 +155,7 @@ export function Discovery({ onStartAiChat }: DiscoveryProps) {
 
           <div className="mb-4">
             <h3 className="font-semibold text-gray-900 mb-2">Looking for:</h3>
-            <span className="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm">
+            <span className="px-3 py-1 bg-muted text-foreground rounded-full text-sm">
               {currentProfile.lookingFor}
             </span>
           </div>
@@ -216,14 +216,14 @@ export function Discovery({ onStartAiChat }: DiscoveryProps) {
         <button
           onClick={handleAiChat}
           disabled={isAnimating}
-          className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full shadow-lg flex items-center justify-center text-white font-bold hover:scale-110 transition-transform disabled:opacity-50"
+          className="w-16 h-16 bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded-full shadow-lg flex items-center justify-center font-bold hover:scale-110 transition-transform disabled:opacity-50"
         >
           AI
         </button>
         <button
           onClick={() => handleSwipe("right")}
           disabled={isAnimating}
-          className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full shadow-lg flex items-center justify-center text-2xl hover:scale-110 transition-transform disabled:opacity-50"
+          className="w-16 h-16 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg flex items-center justify-center text-2xl hover:scale-110 transition-transform disabled:opacity-50"
         >
           ❤️
         </button>

@@ -55,7 +55,7 @@ export function Discovery() {
 
   if (profiles === undefined) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-white to-blue-100 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading profiles...</p>
@@ -68,7 +68,7 @@ export function Discovery() {
   const hasMoreProfiles = remainingProfiles.length > 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-white to-blue-100">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

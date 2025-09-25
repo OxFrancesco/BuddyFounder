@@ -67,7 +67,7 @@ export function MatchModal({ isOpen, onClose, matchedProfile, matchId }: MatchMo
       {/* Modal */}
       <div className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in zoom-in-95 duration-300">
         {/* Header with celebration */}
-        <div className="relative bg-gradient-to-br from-pink-400 via-red-400 to-orange-400 p-8 text-center">
+        <div className="relative bg-gradient-to-br from-primary to-secondary p-8 text-center">
           <div className="text-6xl mb-2">🎉</div>
           <h1 className="text-2xl font-bold text-white mb-1">It's a Match!</h1>
           <p className="text-white/90 text-sm">
@@ -85,7 +85,7 @@ export function MatchModal({ isOpen, onClose, matchedProfile, matchId }: MatchMo
                 className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white text-xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xl font-bold">
                 {matchedProfile.name[0]}
               </div>
             )}

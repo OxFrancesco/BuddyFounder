@@ -140,7 +140,7 @@ export function SwipeCard({ profile, onSwipe, isTopCard, cardIndex }: SwipeCardP
       onMouseLeave={handleMouseUp}
     >
       {/* Photo Section */}
-      <div className="relative h-2/3 bg-gradient-to-br from-blue-100 to-purple-100">
+      <div className="relative h-2/3 bg-muted">
         {currentPhoto?.url ? (
           <img
             src={currentPhoto.url}

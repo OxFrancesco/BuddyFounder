@@ -11,16 +11,18 @@ import { Matches } from "./components/Matches";
 import { Chat } from "./components/Chat";
 import { DocumentManager } from "./components/DocumentManager";
 import { AiChat } from "./components/AiChat";
+import { CofounderAgent } from "./components/CofounderAgent";
 
 export default function App() {
   const [currentView, setCurrentView] = useState<"discovery" | "matches" | "profile" | "documents">("discovery");
   const [selectedMatchId, setSelectedMatchId] = useState<Id<"matches"> | null>(null);
   const [aiChatTarget, setAiChatTarget] = useState<{ userId: Id<"users">; name: string } | null>(null);
+  const [isAgentOpen, setIsAgentOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 to-purple-50">
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm h-16 flex justify-between items-center border-b shadow-sm px-4">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+    <div className="min-h-screen flex flex-col bg-background">
+      <header className="sticky top-0 z-10 bg-card/90 backdrop-blur-sm h-16 flex justify-between items-center border-b border-border shadow-sm px-4">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           BuddyFounder
         </h2>
         <Authenticated>
@@ -56,6 +58,27 @@ export default function App() {
           </div>
         </Unauthenticated>
       </main>
+
+      {/* Floating AI Agent Button */}
+      <Authenticated>
+        <button
+          onClick={() => setIsAgentOpen(true)}
+          className="fixed bottom-4 right-4 w-14 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center z-40 group"
+          aria-label="Open co-founder assistant"
+        >
+          <div className="relative">
+            <span className="text-xl">🤖</span>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full animate-pulse"></div>
+          </div>
+          <div className="absolute right-full mr-3 px-3 py-1 bg-card text-card-foreground rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap text-sm font-medium">
+            Find Co-founders
+          </div>
+        </button>
+
+        {/* AI Agent Component */}
+        <CofounderAgent isOpen={isAgentOpen} onClose={() => setIsAgentOpen(false)} />
+      </Authenticated>
+
       <Toaster />
     </div>
   );
@@ -81,12 +104,14 @@ function AuthenticatedApp({
   if (profile === undefined) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  if (!profile) {
+  // Show profile setup if no profile exists or profile is incomplete
+  // Treat undefined isComplete as incomplete (for backward compatibility)
+  if (!profile || profile.isComplete !== true) {
     return <ProfileSetup />;
   }
 
@@ -123,14 +148,14 @@ function AuthenticatedApp({
       </div>
       
       {/* Bottom Navigation */}
-      <nav className="bg-white border-t px-4 py-2">
+      <nav className="bg-card border-t border-border px-4 py-2">
         <div className="flex justify-around">
           <button
             onClick={() => setCurrentView("discovery")}
             className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
-              currentView === "discovery" 
-                ? "text-pink-500 bg-pink-50" 
-                : "text-gray-500 hover:text-gray-700"
+              currentView === "discovery"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <span className="text-2xl mb-1">🔍</span>
@@ -140,9 +165,9 @@ function AuthenticatedApp({
           <button
             onClick={() => setCurrentView("matches")}
             className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
-              currentView === "matches" 
-                ? "text-pink-500 bg-pink-50" 
-                : "text-gray-500 hover:text-gray-700"
+              currentView === "matches"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <span className="text-2xl mb-1">💬</span>
@@ -152,9 +177,9 @@ function AuthenticatedApp({
           <button
             onClick={() => setCurrentView("documents")}
             className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
-              currentView === "documents" 
-                ? "text-pink-500 bg-pink-50" 
-                : "text-gray-500 hover:text-gray-700"
+              currentView === "documents"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <span className="text-2xl mb-1">📄</span>
@@ -164,9 +189,9 @@ function AuthenticatedApp({
           <button
             onClick={() => setCurrentView("profile")}
             className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
-              currentView === "profile" 
-                ? "text-pink-500 bg-pink-50" 
-                : "text-gray-500 hover:text-gray-700"
+              currentView === "profile"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <span className="text-2xl mb-1">👤</span>

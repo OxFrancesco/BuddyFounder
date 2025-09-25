@@ -140,7 +140,7 @@ export function DocumentManager() {
   if (!documents) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -159,7 +159,7 @@ export function DocumentManager() {
           </div>
           <button
             onClick={() => setShowAddForm(true)}
-            className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-all"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-all"
           >
             Add Document
           </button>
@@ -215,7 +215,7 @@ export function DocumentManager() {
               <div className="flex space-x-3">
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-all"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-semibold transition-all"
                 >
                   {editingDoc ? "Update" : "Save"}
                 </button>
@@ -237,7 +237,7 @@ export function DocumentManager() {
                 onChange={handleFileUpload}
                 accept=".txt,.md,.pdf,.doc,.docx"
                 disabled={isUploading}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100"
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-muted file:text-foreground hover:file:bg-muted/80"
               />
               <p className="text-xs text-gray-500 mt-1">
                 Supported: .txt, .md, .pdf, .doc, .docx (max 10MB)

@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as aiChat from "../aiChat.js";
 import type * as auth from "../auth.js";
+import type * as cofounderAgent from "../cofounderAgent.js";
 import type * as discovery from "../discovery.js";
 import type * as documents from "../documents.js";
 import type * as embeddings from "../embeddings.js";
@@ -38,6 +39,7 @@ import type * as vectorSearch from "../vectorSearch.js";
 declare const fullApi: ApiFromModules<{
   aiChat: typeof aiChat;
   auth: typeof auth;
+  cofounderAgent: typeof cofounderAgent;
   discovery: typeof discovery;
   documents: typeof documents;
   embeddings: typeof embeddings;
