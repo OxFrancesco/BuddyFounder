@@ -484,9 +484,9 @@ export function ProfileSetup({ isEditing = false }: { isEditing?: boolean }) {
                         interest,
                         (interests) => setFormData({ ...formData, interests })
                       )}
-                      className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
                         formData.interests.includes(interest)
-                          ? "bg-purple-500 text-white"
+                          ? "bg-gradient-to-r from-primary to-secondary text-white shadow ring-2 ring-primary/40"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
                     >

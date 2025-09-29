@@ -1,5 +1,7 @@
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useState } from "react";
+import { ShareProfileModal } from "./ShareProfileModal";
 
 interface ProfileViewProps {
   onEdit: () => void;
@@ -7,6 +9,7 @@ interface ProfileViewProps {
 
 export function ProfileView({ onEdit }: ProfileViewProps) {
   const profile = useQuery(api.profiles.getCurrentUserProfile);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   if (profile === undefined) {
     return (
@@ -40,15 +43,24 @@ export function ProfileView({ onEdit }: ProfileViewProps) {
   return (
     <div className="min-h-full bg-white">
       <div className="max-w-4xl mx-auto p-6">
-      {/* Header with Edit Button */}
+      {/* Header with Edit and Share Buttons */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
-        <button
-          onClick={onEdit}
-          className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-all"
-        >
-          Edit Profile
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setIsShareModalOpen(true)}
+            className="px-4 py-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded-lg font-medium transition-all flex items-center gap-2"
+          >
+            <span>📤</span>
+            Share Profile
+          </button>
+          <button
+            onClick={onEdit}
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-all"
+          >
+            Edit Profile
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -190,6 +202,13 @@ export function ProfileView({ onEdit }: ProfileViewProps) {
           </div>
         </div>
       </div>
+
+      {/* Share Profile Modal */}
+      <ShareProfileModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        profile={{ name: profile.name, username: profile.username }}
+      />
     </div>
     </div>
   );

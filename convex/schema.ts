@@ -13,6 +13,7 @@ const applicationTables = {
     photos: v.array(v.id("_storage")),
     location: v.optional(v.string()),
     experience: v.string(), // "beginner", "intermediate", "expert"
+    username: v.optional(v.string()), // Unique username for shareable profile URLs
     isActive: v.boolean(),
     isComplete: v.optional(v.boolean()), // Track if profile setup is completed with required fields
     // Social media fields
@@ -20,7 +21,8 @@ const applicationTables = {
     discord: v.optional(v.string()),
     linkedin: v.optional(v.string()),
     portfolio: v.optional(v.string()),
-  }).index("by_user", ["userId"]),
+  }).index("by_user", ["userId"])
+    .index("by_username", ["username"]),
 
   swipes: defineTable({
     swiperId: v.id("users"),

@@ -5,6 +5,7 @@ import { SignInForm } from "./SignInForm";
 import { SignOutButton } from "./SignOutButton";
 import { Toaster } from "sonner";
 import { useState } from "react";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { ProfileSetup } from "./components/ProfileSetup";
 import { ProfileView } from "./components/ProfileView";
 import { Discovery } from "./components/Discovery";
@@ -13,6 +14,21 @@ import { Chat } from "./components/Chat";
 import { DocumentManager } from "./components/DocumentManager";
 import { AiChat } from "./components/AiChat";
 import { CofounderAgent } from "./components/CofounderAgent";
+import { PublicProfile } from "./components/PublicProfile";
+
+// Header component for app routes
+function AppHeader() {
+  return (
+    <header className="sticky top-0 z-10 bg-card/90 backdrop-blur-sm h-16 flex justify-between items-center border-b border-border shadow-sm px-4">
+      <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+        BuddyFounder
+      </h2>
+      <Authenticated>
+        <SignOutButton />
+      </Authenticated>
+    </header>
+  );
+}
 
 export default function App() {
   const [currentView, setCurrentView] = useState<"discovery" | "matches" | "profile" | "documents">("discovery");
@@ -22,69 +38,72 @@ export default function App() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <header className="sticky top-0 z-10 bg-card/90 backdrop-blur-sm h-16 flex justify-between items-center border-b border-border shadow-sm px-4">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          BuddyFounder
-        </h2>
-        <Authenticated>
-          <SignOutButton />
-        </Authenticated>
-      </header>
-      
-      <main className="flex-1">
-        <Authenticated>
-          <AuthenticatedApp
-            currentView={currentView}
-            setCurrentView={setCurrentView}
-            selectedMatchId={selectedMatchId}
-            setSelectedMatchId={setSelectedMatchId}
-            aiChatTarget={aiChatTarget}
-            setAiChatTarget={setAiChatTarget}
-            isEditingProfile={isEditingProfile}
-            setIsEditingProfile={setIsEditingProfile}
-          />
-        </Authenticated>
-        
-        <Unauthenticated>
-          <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-8">
-            <div className="w-full max-w-md mx-auto">
-              <div className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                  Find Your Co-Founder
-                </h1>
-                <p className="text-xl text-gray-600">
-                  Swipe to discover amazing people to build your next project with
-                </p>
-              </div>
-              <SignInForm />
-            </div>
-          </div>
-        </Unauthenticated>
-      </main>
+    <BrowserRouter>
+      <Routes>
+        {/* Public profile routes */}
+        <Route path="/u/:username" element={<PublicProfile />} />
 
-      {/* Floating AI Agent Button */}
-      <Authenticated>
-        <button
-          onClick={() => setIsAgentOpen(true)}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center z-30 group"
-          aria-label="Open Foundy assistant"
-        >
-          <div className="relative">
-            <span className="text-xl">🤖</span>
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full animate-pulse"></div>
-          </div>
-          <div className="absolute right-full mr-3 px-3 py-1 bg-card text-card-foreground rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap text-sm font-medium">
-            Chat with Foundy
-          </div>
-        </button>
+        {/* Main app route */}
+        <Route path="/*" element={
+          <div className="min-h-screen flex flex-col bg-background">
+            <AppHeader />
 
-        {/* AI Agent Component */}
-        <CofounderAgent isOpen={isAgentOpen} onClose={() => setIsAgentOpen(false)} />
-      </Authenticated>
+            <main className="flex-1">
+              <Authenticated>
+                <AuthenticatedApp
+                  currentView={currentView}
+                  setCurrentView={setCurrentView}
+                  selectedMatchId={selectedMatchId}
+                  setSelectedMatchId={setSelectedMatchId}
+                  aiChatTarget={aiChatTarget}
+                  setAiChatTarget={setAiChatTarget}
+                  isEditingProfile={isEditingProfile}
+                  setIsEditingProfile={setIsEditingProfile}
+                />
+              </Authenticated>
 
-      <Toaster />
-    </div>
+              <Unauthenticated>
+                <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-8">
+                  <div className="w-full max-w-md mx-auto">
+                    <div className="text-center mb-8">
+                      <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                        Find Your Co-Founder
+                      </h1>
+                      <p className="text-xl text-gray-600">
+                        Swipe to discover amazing people to build your next project with
+                      </p>
+                    </div>
+                    <SignInForm />
+                  </div>
+                </div>
+              </Unauthenticated>
+            </main>
+
+            {/* Floating AI Agent Button */}
+            <Authenticated>
+              <button
+                onClick={() => setIsAgentOpen(true)}
+                className="fixed bottom-20 right-4 w-14 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center z-30 group"
+                aria-label="Open Foundy assistant"
+              >
+                <div className="relative">
+                  <span className="text-xl">🤖</span>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full animate-pulse"></div>
+                </div>
+                <div className="absolute right-full mr-3 px-3 py-1 bg-card text-card-foreground rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap text-sm font-medium">
+                  Chat with Foundy
+                </div>
+              </button>
+
+              {/* AI Agent Component */}
+              <CofounderAgent isOpen={isAgentOpen} onClose={() => setIsAgentOpen(false)} />
+            </Authenticated>
+
+            <Toaster />
+          </div>
+        } />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

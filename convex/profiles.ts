@@ -272,3 +272,138 @@ export const getProfileForVapi = internalQuery({
     };
   },
 });
+
+// Public query to get profile by username (for shareable links)
+export const getProfileByUsername = query({
+  args: { username: v.string() },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_username", (q) => q.eq("username", args.username))
+      .filter((q) => q.eq(q.field("isActive"), true))
+      .unique();
+
+    if (!profile) return null;
+
+    // Get photo URLs
+    const photos = await Promise.all(
+      profile.photos.map(async (photoId) => {
+        const url = await ctx.storage.getUrl(photoId);
+        return { id: photoId, url };
+      })
+    );
+
+    // Return public profile data (no sensitive info)
+    return {
+      _id: profile._id,
+      userId: profile.userId,
+      name: profile.name,
+      bio: profile.bio,
+      skills: profile.skills,
+      interests: profile.interests,
+      lookingFor: profile.lookingFor,
+      photos,
+      location: profile.location,
+      experience: profile.experience,
+      username: profile.username,
+      twitter: profile.twitter,
+      linkedin: profile.linkedin,
+      portfolio: profile.portfolio,
+    };
+  },
+});
+
+// Check if username is available
+export const checkUsernameAvailability = query({
+  args: { username: v.string() },
+  handler: async (ctx, args) => {
+    const existingProfile = await ctx.db
+      .query("profiles")
+      .withIndex("by_username", (q) => q.eq("username", args.username))
+      .unique();
+
+    return { available: !existingProfile };
+  },
+});
+
+// Generate a unique username from a name
+function generateUsername(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+    .substring(0, 30); // Limit length
+}
+
+// Update username for current user
+export const updateUsername = mutation({
+  args: { username: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    // Validate username format
+    const username = args.username.trim().toLowerCase();
+    if (username.length < 3 || username.length > 30) {
+      throw new Error("Username must be between 3 and 30 characters");
+    }
+    if (!/^[a-z0-9-]+$/.test(username)) {
+      throw new Error("Username can only contain letters, numbers, and hyphens");
+    }
+    if (username.startsWith('-') || username.endsWith('-')) {
+      throw new Error("Username cannot start or end with a hyphen");
+    }
+
+    // Check if username is taken
+    const existingProfile = await ctx.db
+      .query("profiles")
+      .withIndex("by_username", (q) => q.eq("username", username))
+      .unique();
+
+    if (existingProfile && existingProfile.userId !== userId) {
+      throw new Error("Username is already taken");
+    }
+
+    // Update user's profile
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .unique();
+
+    if (!profile) throw new Error("Profile not found");
+
+    await ctx.db.patch(profile._id, { username });
+
+    return { username };
+  },
+});
+
+// Auto-generate username when profile is created/updated
+export const generateUniqueUsername = mutation({
+  args: { name: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    let baseUsername = generateUsername(args.name);
+    let username = baseUsername;
+    let counter = 1;
+
+    // Keep checking until we find an available username
+    while (true) {
+      const existing = await ctx.db
+        .query("profiles")
+        .withIndex("by_username", (q) => q.eq("username", username))
+        .unique();
+
+      if (!existing) break;
+
+      counter++;
+      username = `${baseUsername}-${counter}`;
+    }
+
+    return { username };
+  },
+});
