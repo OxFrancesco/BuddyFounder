@@ -4,11 +4,8 @@ import { internal } from "./_generated/api";
 
 const http = httpRouter();
 
-// Vapi webhook endpoint for handling function calls and events
-http.route({
-  path: "/vapi/webhook",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
+// Vapi webhook handler
+export const vapiWebhookHandler = httpAction(async (ctx, request) => {
     const body = await request.json();
     const { message } = body;
 
@@ -48,7 +45,13 @@ http.route({
         headers: { "Content-Type": "application/json" }
       });
     }
-  }),
+});
+
+// Add the route to the http router
+http.route({
+  path: "/vapi/webhook",
+  method: "POST",
+  handler: vapiWebhookHandler,
 });
 
 async function handleFunctionCall(ctx: any, message: any) {

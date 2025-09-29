@@ -209,10 +209,10 @@ Instructions:
 
     try {
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-5-mini",
         messages,
         max_tokens: 600,
-        temperature: 0.7,
+        temperature: 0.2,
         presence_penalty: 0.1,
         frequency_penalty: 0.1,
       });

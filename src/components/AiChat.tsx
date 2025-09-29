@@ -20,6 +20,7 @@ export function AiChat({ profileOwnerId, profileOwnerName, onBack }: AiChatProps
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Voice chat integration
   const voiceChat = useVoiceChat({
@@ -48,6 +49,27 @@ export function AiChat({ profileOwnerId, profileOwnerName, onBack }: AiChatProps
     textarea.style.height = "auto";
     textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
   }, [newMessage]);
+
+  // Add keyboard shortcut to exit chat + log scroll container sizing
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        console.log("ESC pressed - exiting AI chat");
+        onBack();
+      }
+    };
+
+    const el = scrollContainerRef.current;
+    if (el) {
+      const { clientHeight, scrollHeight } = el;
+      console.log("[AiChat] Scroll container mounted", { clientHeight, scrollHeight });
+    } else {
+      console.warn("[AiChat] Scroll container ref is null");
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onBack]);
 
   const processSend = useCallback(async () => {
     if (!newMessage.trim() || isSending) return;
@@ -103,22 +125,26 @@ export function AiChat({ profileOwnerId, profileOwnerName, onBack }: AiChatProps
   const isEmptyState = allMessages.length === 0;
 
   return (
-    <div className="relative flex h-[calc(100vh-4rem)] w-full flex-col overflow-hidden bg-gradient-to-br from-[#f0e4d3] via-[#f7efe3] to-[#fdf8f1] px-3 py-6 sm:px-6 lg:px-10">
+    <div className="relative flex h-[calc(100vh-4rem)] w-full flex-col overflow-hidden min-h-0 box-border bg-gradient-to-br from-[#f0e4d3] via-[#f7efe3] to-[#fdf8f1] px-3 py-6 sm:px-6 lg:px-10">
       <div className="pointer-events-none absolute -left-24 top-10 h-64 w-64 rounded-full bg-primary/10 blur-3xl" aria-hidden="true" />
       <div className="pointer-events-none absolute bottom-10 -right-32 h-72 w-72 rounded-full bg-secondary/20 blur-3xl" aria-hidden="true" />
 
-      <div className="relative mx-auto flex h-full w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-white/80 shadow-2xl backdrop-blur-sm ring-1 ring-black/5">
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/70 bg-white/90 px-4 py-4 sm:px-8">
+      <div className="relative mx-auto flex h-full w-full max-w-5xl flex-col overflow-hidden min-h-0 box-border rounded-3xl bg-white/80 shadow-2xl backdrop-blur-sm ring-1 ring-black/5">
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 border-b border-white/70 bg-white/95 backdrop-blur-md px-4 py-4 sm:px-8">
           <div className="flex flex-1 items-center gap-4 min-w-0">
             <button
-              onClick={onBack}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 text-muted-foreground shadow-sm transition hover:border-primary/40 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              aria-label="Go back"
+              onClick={() => {
+                console.log("Back button clicked - exiting AI chat");
+                onBack();
+              }}
+              className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              aria-label="Go back to matches"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
+              <span className="hidden sm:inline">Back</span>
             </button>
 
             <div className="flex min-w-0 flex-1 flex-col">
@@ -191,8 +217,8 @@ export function AiChat({ profileOwnerId, profileOwnerName, onBack }: AiChatProps
         </div>
 
         {/* Messages */}
-        <div className="relative flex flex-1 flex-col bg-gradient-to-b from-white/70 via-white/40 to-white/10">
-          <div className="flex-1 overflow-y-auto px-3 py-5 sm:px-8 sm:py-8">
+        <div className="relative flex flex-1 flex-col min-h-0 bg-gradient-to-b from-white/70 via-white/40 to-white/10">
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overscroll-contain px-3 py-5 sm:px-8 sm:py-8">
             <div className="mx-auto flex max-w-3xl flex-col space-y-6">
               {isEmptyState ? (
                 <div className="mx-auto flex w-full max-w-sm flex-col items-center rounded-3xl border border-dashed border-primary/30 bg-white/80 px-6 py-12 text-center shadow-sm">

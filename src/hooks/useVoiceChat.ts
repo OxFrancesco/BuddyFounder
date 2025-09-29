@@ -126,8 +126,8 @@ export function useVoiceChat({
       },
       model: {
         provider: "openai",
-        model: "gpt-4o-mini",
-        temperature: 0.7,
+        model: "gpt-5-mini",
+        temperature: 0.2,
         messages: [{
           role: "system",
           content: `You are an AI assistant representing ${profileOwnerName}. Respond as if you are them, but keep responses conversational and under 30 words. Be friendly and engaging. If someone asks about details you don't know, suggest they connect directly.`
@@ -155,7 +155,8 @@ export function useVoiceChat({
             required: ["info_type"]
           }
         }
-      ]
+      ],
+      serverUrl: `${import.meta.env.VITE_CONVEX_URL}/vapi/webhook`
     };
   }, [profileOwnerName, profileOwnerId]);
 
