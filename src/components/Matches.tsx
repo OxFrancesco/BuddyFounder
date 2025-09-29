@@ -1,12 +1,16 @@
+import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
+import { LikedProfiles } from "./LikedProfiles";
 
 interface MatchesProps {
   onSelectMatch: (matchId: Id<"matches">) => void;
+  onStartAiChat: (target: { userId: Id<"users">; name: string }) => void;
 }
 
-export function Matches({ onSelectMatch }: MatchesProps) {
+export function Matches({ onSelectMatch, onStartAiChat }: MatchesProps) {
+  const [activeTab, setActiveTab] = useState<"matches" | "liked">("matches");
   const matches = useQuery(api.matches.getMatches);
 
   if (!matches) {
@@ -17,6 +21,51 @@ export function Matches({ onSelectMatch }: MatchesProps) {
     );
   }
 
+  return (
+    <div className="flex flex-col h-full">
+      {/* Tab Navigation */}
+      <div className="flex border-b bg-card">
+        <button
+          onClick={() => setActiveTab("matches")}
+          className={`flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === "matches"
+              ? "border-primary text-primary bg-primary/5"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          💬 Matches
+        </button>
+        <button
+          onClick={() => setActiveTab("liked")}
+          className={`flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === "liked"
+              ? "border-primary text-primary bg-primary/5"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          ❤️ Liked
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      <div className="flex-1 overflow-hidden">
+        {activeTab === "matches" ? (
+          <MatchesTab matches={matches} onSelectMatch={onSelectMatch} />
+        ) : (
+          <LikedProfiles onStartAiChat={onStartAiChat} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MatchesTab({
+  matches,
+  onSelectMatch
+}: {
+  matches: any[],
+  onSelectMatch: (matchId: Id<"matches">) => void
+}) {
   if (matches.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8">
@@ -32,9 +81,7 @@ export function Matches({ onSelectMatch }: MatchesProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Your Matches</h1>
-      
+    <div className="p-4 overflow-y-auto h-full">
       <div className="space-y-4">
         {matches.map((match) => match && (
           <div

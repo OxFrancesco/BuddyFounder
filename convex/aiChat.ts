@@ -41,7 +41,15 @@ export const sendAiMessage = mutation({
       throw new Error("Cannot chat with your own AI");
     }
 
-    // Check if users are matched (required for AI chat access)
+    // Check if user has liked the profile owner OR if they are matched
+    const hasLiked = await ctx.db
+      .query("swipes")
+      .withIndex("by_swiper_and_swiped", (q) =>
+        q.eq("swiperId", userId).eq("swipedId", args.profileOwnerId)
+      )
+      .filter((q) => q.eq(q.field("direction"), "right"))
+      .first();
+
     const match = await ctx.db
       .query("matches")
       .filter((q) =>
@@ -52,8 +60,8 @@ export const sendAiMessage = mutation({
       )
       .first();
 
-    if (!match) {
-      throw new Error("You must be matched with this founder to chat with their AI");
+    if (!hasLiked && !match) {
+      throw new Error("You must like this founder to chat with their AI");
     }
 
     // Get or create chat
@@ -311,6 +319,15 @@ export const canAccessAiChat = query({
       return { canAccess: false, reason: "Cannot chat with your own AI" };
     }
 
+    // Check if user has liked the profile owner
+    const hasLiked = await ctx.db
+      .query("swipes")
+      .withIndex("by_swiper_and_swiped", (q) =>
+        q.eq("swiperId", userId).eq("swipedId", args.profileOwnerId)
+      )
+      .filter((q) => q.eq(q.field("direction"), "right"))
+      .first();
+
     // Check if users are matched
     const match = await ctx.db
       .query("matches")
@@ -322,11 +339,17 @@ export const canAccessAiChat = query({
       )
       .first();
 
-    if (!match) {
-      return { canAccess: false, reason: "You must be matched with this founder to chat with their AI" };
+    if (!hasLiked && !match) {
+      return { canAccess: false, reason: "You must like this founder to chat with their AI" };
     }
 
-    return { canAccess: true, matchedAt: match.matchedAt };
+    return {
+      canAccess: true,
+      isMatched: !!match,
+      hasLiked: !!hasLiked,
+      matchedAt: match?.matchedAt,
+      likedAt: hasLiked?._creationTime
+    };
   },
 });
 
@@ -339,8 +362,16 @@ export const getEnhancedAiChat = query({
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
 
-    // Check access first
-    const accessCheck = await ctx.db
+    // Check access first - either liked or matched
+    const hasLiked = await ctx.db
+      .query("swipes")
+      .withIndex("by_swiper_and_swiped", (q) =>
+        q.eq("swiperId", userId).eq("swipedId", args.profileOwnerId)
+      )
+      .filter((q) => q.eq(q.field("direction"), "right"))
+      .first();
+
+    const match = await ctx.db
       .query("matches")
       .filter((q) =>
         q.or(
@@ -350,7 +381,7 @@ export const getEnhancedAiChat = query({
       )
       .first();
 
-    if (!accessCheck) return null;
+    if (!hasLiked && !match) return null;
 
     const chat = await ctx.db
       .query("aiChats")

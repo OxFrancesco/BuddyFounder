@@ -14,7 +14,7 @@ export function CofounderAgent({ isOpen, onClose }: CofounderAgentProps) {
   }>>([
     {
       role: "assistant",
-      content: "Hi! I'm your AI co-founder assistant. I can help you find the perfect co-founder match based on your profile and preferences. What are you looking for in a co-founder?"
+      content: "Hi! I'm Foundy, your AI co-founder assistant. I can help you find the perfect co-founder match based on your profile and preferences. What are you looking for in a co-founder?"
     }
   ]);
   const [input, setInput] = useState("");
@@ -59,7 +59,7 @@ export function CofounderAgent({ isOpen, onClose }: CofounderAgentProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-20 right-4 w-96 h-[500px] bg-card border border-border rounded-lg shadow-xl flex flex-col z-50">
+    <div className="fixed bottom-20 right-4 w-96 h-[500px] bg-card border border-border rounded-lg shadow-xl flex flex-col z-40">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-primary/5 rounded-t-lg">
         <div className="flex items-center space-x-2">
@@ -67,8 +67,8 @@ export function CofounderAgent({ isOpen, onClose }: CofounderAgentProps) {
             <span className="text-primary-foreground text-sm font-bold">AI</span>
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">Co-founder Assistant</h3>
-            <p className="text-xs text-muted-foreground">Find your perfect match</p>
+            <h3 className="font-semibold text-foreground">Foundy</h3>
+            <p className="text-xs text-muted-foreground">Your co-founder finder</p>
           </div>
         </div>
         <button

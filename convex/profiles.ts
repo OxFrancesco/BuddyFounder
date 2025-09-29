@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalQuery } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const getCurrentUserProfile = query({
@@ -223,7 +223,52 @@ export const generateUploadUrl = mutation({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    
+
     return await ctx.storage.generateUploadUrl();
+  },
+});
+
+export const deleteProfile = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .unique();
+
+    if (profile) {
+      await ctx.db.delete(profile._id);
+    }
+  },
+});
+
+// Internal query for Vapi webhook integration
+export const getProfileForVapi = internalQuery({
+  args: {
+    userId: v.id("users"),
+    infoType: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("isActive"), true))
+      .unique();
+
+    if (!profile) return null;
+
+    // Return different information based on the requested type
+    return {
+      name: profile.name,
+      bio: profile.bio,
+      skills: profile.skills,
+      interests: profile.interests,
+      experience: profile.experience,
+      lookingFor: profile.lookingFor,
+      location: profile.location
+    };
   },
 });

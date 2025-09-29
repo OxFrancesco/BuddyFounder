@@ -114,3 +114,68 @@ export const swipeProfile = mutation({
     return { isMatch: false };
   },
 });
+
+export const getLikedProfiles = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
+
+    // Get all right swipes by current user
+    const rightSwipes = await ctx.db
+      .query("swipes")
+      .withIndex("by_swiper", (q) => q.eq("swiperId", userId))
+      .filter((q) => q.eq(q.field("direction"), "right"))
+      .collect();
+
+    const likedUserIds = rightSwipes.map(s => s.swipedId);
+
+    if (likedUserIds.length === 0) return [];
+
+    // Get profiles for liked users
+    const likedProfiles = await Promise.all(
+      likedUserIds.map(async (likedUserId) => {
+        const profile = await ctx.db
+          .query("profiles")
+          .withIndex("by_user", (q) => q.eq("userId", likedUserId))
+          .filter((q) => q.eq(q.field("isActive"), true))
+          .unique();
+
+        if (!profile) return null;
+
+        // Get photos for the profile
+        const photos = await Promise.all(
+          profile.photos.map(async (photoId) => {
+            const url = await ctx.storage.getUrl(photoId);
+            return { id: photoId, url };
+          })
+        );
+
+        // Check if it's a match (they liked us back)
+        const isMatch = await ctx.db
+          .query("matches")
+          .filter((q) =>
+            q.or(
+              q.and(q.eq(q.field("user1Id"), userId), q.eq(q.field("user2Id"), likedUserId)),
+              q.and(q.eq(q.field("user1Id"), likedUserId), q.eq(q.field("user2Id"), userId))
+            )
+          )
+          .first();
+
+        // Get the swipe info for ordering
+        const swipeInfo = rightSwipes.find(s => s.swipedId === likedUserId);
+
+        return {
+          ...profile,
+          photos,
+          isMatch: !!isMatch,
+          likedAt: swipeInfo?._creationTime || 0
+        };
+      })
+    );
+
+    return likedProfiles
+      .filter(Boolean)
+      .sort((a, b) => b!.likedAt - a!.likedAt); // Sort by most recently liked
+  },
+});

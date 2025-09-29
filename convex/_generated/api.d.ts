@@ -26,6 +26,7 @@ import type * as matches from "../matches.js";
 import type * as notifications from "../notifications.js";
 import type * as profiles from "../profiles.js";
 import type * as router from "../router.js";
+import type * as vapiWebhook from "../vapiWebhook.js";
 import type * as vectorSearch from "../vectorSearch.js";
 
 /**
@@ -50,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   profiles: typeof profiles;
   router: typeof router;
+  vapiWebhook: typeof vapiWebhook;
   vectorSearch: typeof vectorSearch;
 }>;
 export declare const api: FilterApi<
