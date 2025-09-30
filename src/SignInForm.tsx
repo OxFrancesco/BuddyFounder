@@ -22,6 +22,7 @@ export function SignInForm() {
           password,
         });
         toast.success("Signed in successfully!");
+        window.location.href = "https://founder.buddytools.org/app";
       } else {
         await authClient.signUp.email({
           email,
@@ -29,6 +30,7 @@ export function SignInForm() {
           name: email.split("@")[0], // Use email prefix as default name
         });
         toast.success("Account created successfully!");
+        window.location.href = "https://founder.buddytools.org/app";
       }
     } catch (error: any) {
       console.error("Auth error:", error);
