@@ -10,6 +10,13 @@ if (!siteUrl) {
   throw new Error("SITE_URL environment variable is required");
 }
 
+// Support multiple origins for development and production
+const trustedOrigins = [
+  siteUrl,
+  "http://localhost:5173",
+  "https://founder.buddytools.org",
+];
+
 // The component client has methods needed for integrating Convex with Better Auth,
 // as well as helper methods for general use.
 export const authComponent = createClient<DataModel>(components.betterAuth);
@@ -24,7 +31,7 @@ export const createAuth = (
     logger: {
       disabled: optionsOnly,
     },
-    trustedOrigins: [siteUrl],
+    trustedOrigins,
     database: authComponent.adapter(ctx),
     // Configure simple, non-verified email/password to get started
     emailAndPassword: {
