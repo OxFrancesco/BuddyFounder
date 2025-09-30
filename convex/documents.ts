@@ -7,8 +7,8 @@ export const getUserDocuments = query({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) return [];
+    if (!user || !user._id || typeof user._id !== "string") return [];
+    const userId: string = user._id;
 
     const documents = await ctx.db
       .query("documents")
@@ -47,8 +47,10 @@ export const uploadDocument = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     const documentId = await ctx.db.insert("documents", {
       userId,
@@ -78,8 +80,10 @@ export const updateDocument = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     const document = await ctx.db.get(args.documentId);
     if (!document || document.userId !== userId) {
@@ -117,8 +121,10 @@ export const deleteDocument = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     const document = await ctx.db.get(args.documentId);
     if (!document || document.userId !== userId) {
@@ -143,8 +149,10 @@ export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
     
     return await ctx.storage.generateUploadUrl();
   },
@@ -165,26 +173,43 @@ async function createDocumentChunks(
   let currentPosition = 0;
   const maxChunkSize = 1000; // characters
 
-  for (const paragraph of paragraphs) {
+  for (let i = 0; i < paragraphs.length; i++) {
+    const paragraph = paragraphs[i];
+    const isLastParagraph = i === paragraphs.length - 1;
+
     if (currentChunk.length + paragraph.length > maxChunkSize && currentChunk.length > 0) {
+      // Save current chunk
       chunks.push({
         content: currentChunk.trim(),
         startIndex: currentStartIndex,
         endIndex: currentPosition
       });
-      currentStartIndex = currentPosition + 2; // +2 for the paragraph separator
+      // Start new chunk at current position
+      currentStartIndex = currentPosition;
       currentChunk = paragraph;
+      currentPosition += paragraph.length;
     } else {
-      currentChunk += (currentChunk ? '\n\n' : '') + paragraph;
+      // Add to current chunk
+      if (currentChunk) {
+        currentChunk += '\n\n' + paragraph;
+        currentPosition += 2; // for '\n\n' separator
+      } else {
+        currentChunk = paragraph;
+      }
+      currentPosition += paragraph.length;
     }
-    currentPosition += paragraph.length + 2; // +2 for '\n\n'
+
+    // Add separator length only if not the last paragraph
+    if (!isLastParagraph) {
+      currentPosition += 2; // for '\n\n' after paragraph
+    }
   }
 
   if (currentChunk.trim().length > 0) {
     chunks.push({
       content: currentChunk.trim(),
       startIndex: currentStartIndex,
-      endIndex: content.length
+      endIndex: currentPosition
     });
   }
 

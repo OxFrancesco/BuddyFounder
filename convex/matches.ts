@@ -8,8 +8,8 @@ export const getMatches = query({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) return [];
+    if (!user || !user._id || typeof user._id !== "string") return [];
+    const userId: string = user._id;
 
     const matches = await ctx.db
       .query("matches")
@@ -73,8 +73,8 @@ export const getMessages = query({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) return [];
+    if (!user || !user._id || typeof user._id !== "string") return [];
+    const userId: string = user._id;
 
     // Verify user is part of this match
     const match = await ctx.db.get(args.matchId);
@@ -98,8 +98,10 @@ export const sendMessage = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     // Verify user is part of this match
     const match = await ctx.db.get(args.matchId);

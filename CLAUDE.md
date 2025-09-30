@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 BuddyFounder is a co-founder matchmaking platform ("Tinder for Co-founders") built with:
 - **Frontend**: React 19, Vite, React Router DOM
 - **Backend**: Convex (real-time database & serverless functions)
-- **Auth**: Convex Auth with anonymous authentication
+- **Auth**: Better Auth with email/password authentication
 - **AI**: OpenAI for chat/RAG, Vapi for voice interactions
 - **Styling**: Tailwind CSS
 - **Deployment**: Connected to Convex deployment `original-ladybug-597`
@@ -149,9 +149,10 @@ Always create indexes for common queries. Index names should describe all fields
 - Required fields: name, bio, skills, interests, lookingFor, photos, experience
 
 ### Authentication
-- Uses Convex Auth (anonymous by default)
-- User ID from `ctx.auth.getUserIdentity()` in backend
-- Frontend wraps components with `<Authenticated>` or `<Unauthenticated>`
+- Uses Better Auth with email/password authentication
+- Backend: Get user with `authComponent.getAuthUser(ctx)`, then extract `userId = user?._id`
+- Always validate `user` and `user._id` exist before using them
+- Frontend: Uses auth client from `src/lib/auth-client.ts` for sign in/sign up
 
 ### Real-time Updates
 Convex provides automatic real-time subscriptions via `useQuery`:

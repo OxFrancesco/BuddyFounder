@@ -7,8 +7,8 @@ export const getCurrentUserProfile = query({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) return null;
+    if (!user || !user._id || typeof user._id !== "string") return null;
+    const userId: string = user._id;
 
     const profile = await ctx.db
       .query("profiles")
@@ -45,8 +45,10 @@ export const createProfile = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     // Check if profile already exists
     const existingProfile = await ctx.db
@@ -114,8 +116,10 @@ export const createIncompleteProfile = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     // Check if profile already exists
     const existingProfile = await ctx.db
@@ -164,8 +168,10 @@ export const updateProfile = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     const profile = await ctx.db
       .query("profiles")
@@ -222,12 +228,12 @@ export const addPhoto = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    console.log("[profiles:addPhoto] start", { userId, storageId: args.storageId });
-    if (!userId) {
+    if (!user || !user._id || typeof user._id !== "string") {
       console.error("[profiles:addPhoto] Not authenticated");
       throw new Error("Not authenticated");
     }
+    const userId: string = user._id;
+    console.log("[profiles:addPhoto] start", { userId, storageId: args.storageId });
 
     const profile = await ctx.db
       .query("profiles")
@@ -252,8 +258,10 @@ export const removePhoto = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     const profile = await ctx.db
       .query("profiles")
@@ -271,8 +279,10 @@ export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     return await ctx.storage.generateUploadUrl();
   },
@@ -282,8 +292,10 @@ export const deleteProfile = mutation({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     const profile = await ctx.db
       .query("profiles")
@@ -393,8 +405,10 @@ export const updateUsername = mutation({
   args: { username: v.string() },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     // Validate username format
     const username = args.username.trim().toLowerCase();
@@ -437,8 +451,10 @@ export const generateUniqueUsername = mutation({
   args: { name: v.string() },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     let baseUsername = generateUsername(args.name);
     let username = baseUsername;

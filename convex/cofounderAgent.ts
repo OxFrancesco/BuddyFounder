@@ -7,8 +7,10 @@ export const getAllProfilesForAgent = query({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     // Get all active profiles except the current user's
     const profiles = await ctx.db

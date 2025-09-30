@@ -8,8 +8,8 @@ export const getDiscoveryProfiles = query({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) return [];
+    if (!user || !user._id || typeof user._id !== "string") return [];
+    const userId: string = user._id;
 
     // Get current user's profile to exclude them
     const currentProfile = await ctx.db
@@ -64,8 +64,10 @@ export const swipeProfile = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     // Check if already swiped
     const existingSwipe = await ctx.db
@@ -122,8 +124,8 @@ export const getLikedProfiles = query({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) return [];
+    if (!user || !user._id || typeof user._id !== "string") return [];
+    const userId: string = user._id;
 
     // Get all right swipes by current user
     const rightSwipes = await ctx.db

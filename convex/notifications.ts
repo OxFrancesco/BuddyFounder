@@ -13,8 +13,8 @@ export const getUserNotifications = query({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) return [];
+    if (!user || !user._id || typeof user._id !== "string") return [];
+    const userId: string = user._id;
 
     const limit = args.limit || 50;
 
@@ -42,8 +42,10 @@ export const markNotificationAsRead = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     const notification = await ctx.db.get(args.notificationId);
     if (!notification || notification.userId !== userId) {
@@ -61,8 +63,10 @@ export const markAllNotificationsAsRead = mutation({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     const unreadNotifications = await ctx.db
       .query("notifications")
@@ -86,8 +90,8 @@ export const getUnreadCount = query({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) return 0;
+    if (!user || !user._id || typeof user._id !== "string") return 0;
+    const userId: string = user._id;
 
     const count = await ctx.db
       .query("notifications")
@@ -106,8 +110,10 @@ export const deleteNotification = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     const notification = await ctx.db.get(args.notificationId);
     if (!notification || notification.userId !== userId) {

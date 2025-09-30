@@ -16,8 +16,8 @@ export const getAiChat = query({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) return null;
+    if (!user || !user._id || typeof user._id !== "string") return null;
+    const userId: string = user._id;
 
     const chat = await ctx.db
       .query("aiChats")
@@ -37,8 +37,10 @@ export const sendAiMessage = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user || !user._id || typeof user._id !== "string") {
+      throw new Error("Not authenticated");
+    }
+    const userId: string = user._id;
 
     if (userId === args.profileOwnerId) {
       throw new Error("Cannot chat with your own AI");
@@ -316,8 +318,10 @@ export const canAccessAiChat = query({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) return { canAccess: false, reason: "Not authenticated" };
+    if (!user || !user._id || typeof user._id !== "string") {
+      return { canAccess: false, reason: "Not authenticated" };
+    }
+    const userId: string = user._id;
 
     if (userId === args.profileOwnerId) {
       return { canAccess: false, reason: "Cannot chat with your own AI" };
@@ -364,8 +368,8 @@ export const getEnhancedAiChat = query({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const userId = user?._id as any;
-    if (!userId) return null;
+    if (!user || !user._id || typeof user._id !== "string") return null;
+    const userId: string = user._id;
 
     // Check access first - either liked or matched
     const hasLiked = await ctx.db
