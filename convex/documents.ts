@@ -192,7 +192,6 @@ async function createDocumentChunks(
       // Add to current chunk
       if (currentChunk) {
         currentChunk += '\n\n' + paragraph;
-        currentPosition += 2; // for '\n\n' separator
       } else {
         currentChunk = paragraph;
       }
