@@ -1,7 +1,8 @@
 import { v } from "convex/values";
 import { query, mutation, action, internalQuery, internalMutation, internalAction } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { authComponent } from "./auth";
 import { internal } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -11,15 +12,16 @@ const openai = new OpenAI({
 
 export const getAiChat = query({
   args: {
-    profileOwnerId: v.id("users"),
+    profileOwnerId: v.string(), // Auth subject ID
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) return null;
 
     const chat = await ctx.db
       .query("aiChats")
-      .withIndex("by_participant_and_owner", (q) => 
+      .withIndex("by_participant_and_owner", (q) =>
         q.eq("participantId", userId).eq("profileOwnerId", args.profileOwnerId)
       )
       .unique();
@@ -30,11 +32,12 @@ export const getAiChat = query({
 
 export const sendAiMessage = mutation({
   args: {
-    profileOwnerId: v.id("users"),
+    profileOwnerId: v.string(), // Auth subject ID
     message: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     if (userId === args.profileOwnerId) {
@@ -126,7 +129,7 @@ export const sendAiMessage = mutation({
 export const generateAiResponse = internalAction({
   args: {
     chatId: v.id("aiChats"),
-    profileOwnerId: v.id("users"),
+    profileOwnerId: v.string(), // Auth subject ID
     userMessage: v.string(),
   },
   handler: async (ctx, args) => {
@@ -209,7 +212,7 @@ Instructions:
 
     try {
       const response = await openai.chat.completions.create({
-        model: "gpt-5-mini",
+        model: "gpt-4o-mini",
         messages,
         max_tokens: 600,
         temperature: 0.2,
@@ -249,7 +252,7 @@ export const getChatForResponse = internalQuery({
 
 export const getProfileContext = internalQuery({
   args: {
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
   },
   handler: async (ctx, args) => {
     const profile = await ctx.db
@@ -265,7 +268,7 @@ export const getProfileContext = internalQuery({
 
 export const getSocialConnections = internalQuery({
   args: {
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
   },
   handler: async (ctx, args) => {
     return await ctx.db
@@ -309,10 +312,11 @@ export const addAiMessage = internalMutation({
 // New function to check if user can access AI chat
 export const canAccessAiChat = query({
   args: {
-    profileOwnerId: v.id("users"),
+    profileOwnerId: v.string(), // Auth subject ID
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) return { canAccess: false, reason: "Not authenticated" };
 
     if (userId === args.profileOwnerId) {
@@ -356,10 +360,11 @@ export const canAccessAiChat = query({
 // Get AI chat with enhanced information
 export const getEnhancedAiChat = query({
   args: {
-    profileOwnerId: v.id("users"),
+    profileOwnerId: v.string(), // Auth subject ID
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) return null;
 
     // Check access first - either liked or matched

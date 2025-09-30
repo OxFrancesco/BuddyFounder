@@ -1,16 +1,18 @@
-import { auth } from "./auth";
-import router from "./router";
+import { httpRouter } from "convex/server";
+import { authComponent, createAuth } from "./auth";
 import { vapiWebhookHandler } from "./vapiWebhook";
 
-const http = router;
+const http = httpRouter();
 
-auth.addHttpRoutes(http);
+// Register Better Auth route handlers with CORS enabled
+// CORS handling is required for client side frameworks
+authComponent.registerRoutes(http, createAuth, { cors: true });
 
-// Add Vapi webhook routes
+// Add Vapi webhook route
 http.route({
   path: "/vapi/webhook",
   method: "POST",
-  handler: vapiWebhookHandler
+  handler: vapiWebhookHandler,
 });
 
 export default http;

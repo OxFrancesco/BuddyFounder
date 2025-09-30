@@ -1,37 +1,50 @@
 "use client";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { authClient } from "./lib/auth-client";
 
 export function SignInForm() {
-  const { signIn } = useAuthActions();
   const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
   const [submitting, setSubmitting] = useState(false);
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    const formData = new FormData(e.target as HTMLFormElement);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    try {
+      if (flow === "signIn") {
+        await authClient.signIn.email({
+          email,
+          password,
+        });
+        toast.success("Signed in successfully!");
+      } else {
+        await authClient.signUp.email({
+          email,
+          password,
+          name: email.split("@")[0], // Use email prefix as default name
+        });
+        toast.success("Account created successfully!");
+      }
+    } catch (error: any) {
+      console.error("Auth error:", error);
+      const errorMessage =
+        flow === "signIn"
+          ? "Could not sign in. Check your credentials or sign up instead."
+          : "Could not sign up. Try signing in instead.";
+      toast.error(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="w-full">
-      <form
-        className="flex flex-col gap-form-field"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setSubmitting(true);
-          const formData = new FormData(e.target as HTMLFormElement);
-          formData.set("flow", flow);
-          void signIn("password", formData).catch((error) => {
-            let toastTitle = "";
-            if (error.message.includes("Invalid password")) {
-              toastTitle = "Invalid password. Please try again.";
-            } else {
-              toastTitle =
-                flow === "signIn"
-                  ? "Could not sign in, did you mean to sign up?"
-                  : "Could not sign up, did you mean to sign in?";
-            }
-            toast.error(toastTitle);
-            setSubmitting(false);
-          });
-        }}
-      >
+      <form className="flex flex-col gap-form-field" onSubmit={handleSubmit}>
         <input
           className="auth-input-field"
           type="email"
@@ -64,14 +77,6 @@ export function SignInForm() {
           </button>
         </div>
       </form>
-      <div className="flex items-center justify-center my-3">
-        <hr className="my-4 grow border-gray-200" />
-        <span className="mx-4 text-secondary">or</span>
-        <hr className="my-4 grow border-gray-200" />
-      </div>
-      <button className="auth-button" onClick={() => void signIn("anonymous")}>
-        Sign in anonymously
-      </button>
     </div>
   );
 }

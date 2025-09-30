@@ -1,11 +1,13 @@
 import { v } from "convex/values";
 import { query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { authComponent } from "./auth";
+import { Id } from "./_generated/dataModel";
 
 export const getAllProfilesForAgent = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     // Get all active profiles except the current user's

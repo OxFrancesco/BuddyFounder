@@ -15,14 +15,18 @@ import { DocumentManager } from "./components/DocumentManager";
 import { AiChat } from "./components/AiChat";
 import { CofounderAgent } from "./components/CofounderAgent";
 import { PublicProfile } from "./components/PublicProfile";
+import { Landing } from "./components/Landing";
 
 // Header component for app routes
 function AppHeader() {
   return (
     <header className="sticky top-0 z-10 bg-card/90 backdrop-blur-sm h-16 flex justify-between items-center border-b border-border shadow-sm px-4">
-      <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-        BuddyFounder
-      </h2>
+      <div className="flex items-center gap-3">
+        <img src="/logo.png" alt="BuddyFounder Logo" className="h-10 w-10" />
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          BuddyFounder
+        </h2>
+      </div>
       <Authenticated>
         <SignOutButton />
       </Authenticated>
@@ -40,11 +44,14 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Landing page */}
+        <Route path="/" element={<Landing />} />
+
         {/* Public profile routes */}
         <Route path="/u/:username" element={<PublicProfile />} />
 
         {/* Main app route */}
-        <Route path="/*" element={
+        <Route path="/app/*" element={
           <div className="min-h-screen flex flex-col bg-background">
             <AppHeader />
 

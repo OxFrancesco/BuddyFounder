@@ -1,11 +1,13 @@
 import { v } from "convex/values";
 import { query, mutation, internalQuery } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { authComponent } from "./auth";
+import { Id } from "./_generated/dataModel";
 
 export const getCurrentUserProfile = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) return null;
 
     const profile = await ctx.db
@@ -42,7 +44,8 @@ export const createProfile = mutation({
     portfolio: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     // Check if profile already exists
@@ -53,6 +56,24 @@ export const createProfile = mutation({
 
     if (existingProfile) {
       throw new Error("Profile already exists");
+    }
+
+    // Generate unique username from name
+    let baseUsername = generateUsername(args.name);
+    let username = baseUsername;
+    let counter = 1;
+
+    // Keep checking until we find an available username
+    while (true) {
+      const existing = await ctx.db
+        .query("profiles")
+        .withIndex("by_username", (q) => q.eq("username", username))
+        .unique();
+
+      if (!existing) break;
+
+      counter++;
+      username = `${baseUsername}-${counter}`;
     }
 
     return await ctx.db.insert("profiles", {
@@ -69,6 +90,7 @@ export const createProfile = mutation({
       discord: args.discord,
       linkedin: args.linkedin,
       portfolio: args.portfolio,
+      username, // Auto-generated username
       isActive: true,
       isComplete: true, // Mark as complete when created with all required fields
     });
@@ -91,7 +113,8 @@ export const createIncompleteProfile = mutation({
     portfolio: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     // Check if profile already exists
@@ -140,7 +163,8 @@ export const updateProfile = mutation({
     isComplete: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     const profile = await ctx.db
@@ -164,6 +188,29 @@ export const updateProfile = mutation({
     if (args.portfolio !== undefined) updates.portfolio = args.portfolio;
     if (args.isComplete !== undefined) updates.isComplete = args.isComplete;
 
+    // Auto-generate username if completing profile and no username exists
+    if (args.isComplete === true && !profile.username) {
+      const nameToUse = args.name || profile.name;
+      let baseUsername = generateUsername(nameToUse);
+      let username = baseUsername;
+      let counter = 1;
+
+      // Keep checking until we find an available username
+      while (true) {
+        const existing = await ctx.db
+          .query("profiles")
+          .withIndex("by_username", (q) => q.eq("username", username))
+          .unique();
+
+        if (!existing) break;
+
+        counter++;
+        username = `${baseUsername}-${counter}`;
+      }
+
+      updates.username = username;
+    }
+
     await ctx.db.patch(profile._id, updates);
   },
 });
@@ -174,7 +221,8 @@ export const addPhoto = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     console.log("[profiles:addPhoto] start", { userId, storageId: args.storageId });
     if (!userId) {
       console.error("[profiles:addPhoto] Not authenticated");
@@ -203,7 +251,8 @@ export const removePhoto = mutation({
     storageId: v.id("_storage"),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     const profile = await ctx.db
@@ -221,7 +270,8 @@ export const removePhoto = mutation({
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     return await ctx.storage.generateUploadUrl();
@@ -231,7 +281,8 @@ export const generateUploadUrl = mutation({
 export const deleteProfile = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     const profile = await ctx.db
@@ -248,7 +299,7 @@ export const deleteProfile = mutation({
 // Internal query for Vapi webhook integration
 export const getProfileForVapi = internalQuery({
   args: {
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
     infoType: v.optional(v.string())
   },
   handler: async (ctx, args) => {
@@ -341,7 +392,8 @@ function generateUsername(name: string): string {
 export const updateUsername = mutation({
   args: { username: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     // Validate username format
@@ -384,7 +436,8 @@ export const updateUsername = mutation({
 export const generateUniqueUsername = mutation({
   args: { name: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     let baseUsername = generateUsername(args.name);

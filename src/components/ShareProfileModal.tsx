@@ -137,21 +137,7 @@ export function ShareProfileModal({ isOpen, onClose, profile }: ShareProfileModa
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">Your Profile Username</label>
 
-          {!profile.username ? (
-            <div className="text-center py-4">
-              <p className="text-gray-600 mb-4">Set up a username to create your shareable profile link</p>
-              <button
-                onClick={handleGenerateUsername}
-                disabled={isGenerating}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isGenerating ? 'Generating...' : 'Generate Username'}
-              </button>
-              {usernameError && (
-                <p className="text-red-500 text-sm mt-2">{usernameError}</p>
-              )}
-            </div>
-          ) : isEditingUsername ? (
+          {isEditingUsername ? (
             <div className="space-y-3">
               <div>
                 <input
@@ -193,7 +179,7 @@ export function ShareProfileModal({ isOpen, onClose, profile }: ShareProfileModa
                 </button>
               </div>
             </div>
-          ) : (
+          ) : profile.username ? (
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <span className="font-mono text-primary">@{profile.username}</span>
               <button
@@ -202,6 +188,20 @@ export function ShareProfileModal({ isOpen, onClose, profile }: ShareProfileModa
               >
                 Edit
               </button>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-gray-600 mb-4">Username not found. Generate one to share your profile.</p>
+              <button
+                onClick={handleGenerateUsername}
+                disabled={isGenerating}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isGenerating ? 'Generating...' : 'Generate Username'}
+              </button>
+              {usernameError && (
+                <p className="text-red-500 text-sm mt-2">{usernameError}</p>
+              )}
             </div>
           )}
         </div>

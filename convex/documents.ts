@@ -1,11 +1,13 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { authComponent } from "./auth";
+import { Id } from "./_generated/dataModel";
 
 export const getUserDocuments = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) return [];
 
     const documents = await ctx.db
@@ -20,7 +22,7 @@ export const getUserDocuments = query({
 
 export const getPublicDocuments = query({
   args: {
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
   },
   handler: async (ctx, args) => {
     const documents = await ctx.db
@@ -44,7 +46,8 @@ export const uploadDocument = mutation({
     isPublic: v.boolean(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     const documentId = await ctx.db.insert("documents", {
@@ -74,7 +77,8 @@ export const updateDocument = mutation({
     isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     const document = await ctx.db.get(args.documentId);
@@ -112,7 +116,8 @@ export const deleteDocument = mutation({
     documentId: v.id("documents"),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     const document = await ctx.db.get(args.documentId);
@@ -137,7 +142,8 @@ export const deleteDocument = mutation({
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
     
     return await ctx.storage.generateUploadUrl();
@@ -153,21 +159,33 @@ async function createDocumentChunks(
 ) {
   // Simple chunking strategy: split by paragraphs and limit chunk size
   const paragraphs = content.split('\n\n').filter(p => p.trim().length > 0);
-  const chunks: string[] = [];
+  const chunks: Array<{ content: string; startIndex: number; endIndex: number }> = [];
   let currentChunk = '';
+  let currentStartIndex = 0;
+  let currentPosition = 0;
   const maxChunkSize = 1000; // characters
 
   for (const paragraph of paragraphs) {
     if (currentChunk.length + paragraph.length > maxChunkSize && currentChunk.length > 0) {
-      chunks.push(currentChunk.trim());
+      chunks.push({
+        content: currentChunk.trim(),
+        startIndex: currentStartIndex,
+        endIndex: currentPosition
+      });
+      currentStartIndex = currentPosition + 2; // +2 for the paragraph separator
       currentChunk = paragraph;
     } else {
       currentChunk += (currentChunk ? '\n\n' : '') + paragraph;
     }
+    currentPosition += paragraph.length + 2; // +2 for '\n\n'
   }
 
   if (currentChunk.trim().length > 0) {
-    chunks.push(currentChunk.trim());
+    chunks.push({
+      content: currentChunk.trim(),
+      startIndex: currentStartIndex,
+      endIndex: content.length
+    });
   }
 
   // Insert chunks
@@ -175,8 +193,10 @@ async function createDocumentChunks(
     await ctx.db.insert("documentChunks", {
       documentId,
       userId,
-      content: chunks[i],
+      content: chunks[i].content,
       chunkIndex: i,
+      startIndex: chunks[i].startIndex,
+      endIndex: chunks[i].endIndex,
     });
   }
 }

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { authComponent } from "./auth";
+import { Id } from "./_generated/dataModel";
 
 // TODO: Re-enable when internal API exports are properly configured
 // Temporarily disabled to allow build to pass
@@ -11,7 +12,8 @@ export const getUserNotifications = query({
     unreadOnly: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) return [];
 
     const limit = args.limit || 50;
@@ -39,7 +41,8 @@ export const markNotificationAsRead = mutation({
     notificationId: v.id("notifications"),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     const notification = await ctx.db.get(args.notificationId);
@@ -57,7 +60,8 @@ export const markNotificationAsRead = mutation({
 export const markAllNotificationsAsRead = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     const unreadNotifications = await ctx.db
@@ -81,7 +85,8 @@ export const markAllNotificationsAsRead = mutation({
 export const getUnreadCount = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) return 0;
 
     const count = await ctx.db
@@ -100,7 +105,8 @@ export const deleteNotification = mutation({
     notificationId: v.id("notifications"),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     const notification = await ctx.db.get(args.notificationId);

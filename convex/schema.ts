@@ -1,10 +1,9 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { authTables } from "@convex-dev/auth/server";
 
 const applicationTables = {
   profiles: defineTable({
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID, not a document ID
     name: v.string(),
     bio: v.string(),
     skills: v.array(v.string()),
@@ -25,23 +24,23 @@ const applicationTables = {
     .index("by_username", ["username"]),
 
   swipes: defineTable({
-    swiperId: v.id("users"),
-    swipedId: v.id("users"),
+    swiperId: v.string(), // Auth subject ID
+    swipedId: v.string(), // Auth subject ID
     direction: v.union(v.literal("left"), v.literal("right")), // left = pass, right = like
   }).index("by_swiper", ["swiperId"])
     .index("by_swiped", ["swipedId"])
     .index("by_swiper_and_swiped", ["swiperId", "swipedId"]),
 
   matches: defineTable({
-    user1Id: v.id("users"),
-    user2Id: v.id("users"),
+    user1Id: v.string(), // Auth subject ID
+    user2Id: v.string(), // Auth subject ID
     matchedAt: v.number(),
   }).index("by_user1", ["user1Id"])
     .index("by_user2", ["user2Id"]),
 
   messages: defineTable({
     matchId: v.id("matches"),
-    senderId: v.id("users"),
+    senderId: v.string(), // Auth subject ID
     content: v.string(),
     sentAt: v.number(),
   }).index("by_match", ["matchId"])
@@ -49,7 +48,7 @@ const applicationTables = {
 
   // Enhanced tables for AI chat and RAG
   documents: defineTable({
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
     title: v.string(),
     content: v.string(),
     sourceType: v.union(
@@ -77,8 +76,8 @@ const applicationTables = {
     .index("by_processed", ["isProcessed"]),
 
   aiChats: defineTable({
-    participantId: v.id("users"), // Person chatting with the AI
-    profileOwnerId: v.id("users"), // Person whose AI they're chatting with
+    participantId: v.string(), // Auth subject ID - Person chatting with the AI
+    profileOwnerId: v.string(), // Auth subject ID - Person whose AI they're chatting with
     messages: v.array(v.object({
       role: v.union(v.literal("user"), v.literal("assistant")),
       content: v.string(),
@@ -97,7 +96,7 @@ const applicationTables = {
 
   documentChunks: defineTable({
     documentId: v.id("documents"),
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
     content: v.string(),
     chunkIndex: v.number(),
     startIndex: v.number(), // Character position in original document
@@ -111,7 +110,7 @@ const applicationTables = {
 
   // Social media connections and data
   socialConnections: defineTable({
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
     platform: v.union(
       v.literal("twitter"),
       v.literal("github"),
@@ -138,7 +137,7 @@ const applicationTables = {
 
   // Notifications system
   notifications: defineTable({
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
     type: v.union(
       v.literal("match"),
       v.literal("message"),
@@ -148,7 +147,7 @@ const applicationTables = {
     ),
     title: v.string(),
     message: v.string(),
-    relatedUserId: v.optional(v.id("users")),
+    relatedUserId: v.optional(v.string()), // Auth subject ID
     relatedMatchId: v.optional(v.id("matches")),
     relatedChatId: v.optional(v.id("aiChats")),
     isRead: v.boolean(),
@@ -160,7 +159,4 @@ const applicationTables = {
     .index("by_type", ["type"]),
 };
 
-export default defineSchema({
-  ...authTables,
-  ...applicationTables,
-});
+export default defineSchema(applicationTables);

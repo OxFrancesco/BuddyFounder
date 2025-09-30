@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query, action, internalQuery } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { authComponent } from "./auth";
 import { internal } from "./_generated/api";
 import { cosineSimilarity } from "./embeddings";
 
@@ -8,7 +8,7 @@ import { cosineSimilarity } from "./embeddings";
 export const searchSimilarContent = action({
   args: {
     query: v.string(),
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
     limit: v.optional(v.number()),
     threshold: v.optional(v.number()),
     sourceTypes: v.optional(v.array(v.string())),
@@ -23,7 +23,7 @@ export const searchSimilarContent = action({
 export const hybridSearch = action({
   args: {
     query: v.string(),
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
     limit: v.optional(v.number()),
     vectorWeight: v.optional(v.number()),
     keywordWeight: v.optional(v.number()),
@@ -38,7 +38,7 @@ export const hybridSearch = action({
 export const getContextForAiChat = action({
   args: {
     query: v.string(),
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
     conversationHistory: v.optional(v.array(v.object({
       role: v.string(),
       content: v.string(),
@@ -53,7 +53,7 @@ export const getContextForAiChat = action({
 // Internal queries
 export const getProcessedChunks = internalQuery({
   args: {
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
     sourceTypes: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
@@ -96,7 +96,7 @@ export const getDocumentInfo = internalQuery({
 export const keywordSearch = internalQuery({
   args: {
     query: v.string(),
-    userId: v.id("users"),
+    userId: v.string(), // Auth subject ID
     limit: v.number(),
   },
   handler: async (ctx, args) => {

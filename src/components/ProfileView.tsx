@@ -68,20 +68,29 @@ export function ProfileView({ onEdit }: ProfileViewProps) {
         <div className="lg:col-span-1">
           {/* Photo Gallery */}
           {profile.photos && profile.photos.length > 0 ? (
-            <div className="mb-6">
-              <div className="grid grid-cols-2 gap-2">
-                {profile.photos.map((photo, index) => (
-                  <img
-                    key={photo.id}
-                    src={photo.url || ""}
-                    alt={`Profile ${index + 1}`}
-                    className="w-full aspect-square object-cover rounded-lg"
-                  />
-                ))}
-              </div>
+            <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              {/* Show first photo large if only one, otherwise grid */}
+              {profile.photos.length === 1 ? (
+                <img
+                  src={profile.photos[0].url || ""}
+                  alt="Profile"
+                  className="w-full aspect-square object-cover"
+                />
+              ) : (
+                <div className="grid grid-cols-2 gap-0">
+                  {profile.photos.map((photo, index) => (
+                    <img
+                      key={photo.id}
+                      src={photo.url || ""}
+                      alt={`Profile ${index + 1}`}
+                      className="w-full aspect-square object-cover border-r border-b border-gray-200 last:border-r-0"
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
-            <div className="mb-6 p-8 border-2 border-dashed border-gray-300 rounded-lg text-center">
+            <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
               <span className="text-4xl mb-2 block">📷</span>
               <p className="text-gray-500">No photos added yet</p>
             </div>
@@ -190,7 +199,7 @@ export function ProfileView({ onEdit }: ProfileViewProps) {
                 {profile.interests.map((interest) => (
                   <span
                     key={interest}
-                    className="px-3 py-1 bg-secondary/20 text-secondary-foreground rounded-full text-sm font-medium"
+                    className="px-3 py-1 bg-gradient-to-r from-primary to-secondary text-white rounded-full text-sm font-medium"
                   >
                     {interest}
                   </span>

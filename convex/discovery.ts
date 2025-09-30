@@ -1,12 +1,14 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { authComponent } from "./auth";
 import { internal } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
 
 export const getDiscoveryProfiles = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) return [];
 
     // Get current user's profile to exclude them
@@ -57,11 +59,12 @@ export const getDiscoveryProfiles = query({
 
 export const swipeProfile = mutation({
   args: {
-    swipedUserId: v.id("users"),
+    swipedUserId: v.string(), // Auth subject ID
     direction: v.union(v.literal("left"), v.literal("right")),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) throw new Error("Not authenticated");
 
     // Check if already swiped
@@ -118,7 +121,8 @@ export const swipeProfile = mutation({
 export const getLikedProfiles = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
+    const userId = user?._id as any;
     if (!userId) return [];
 
     // Get all right swipes by current user
