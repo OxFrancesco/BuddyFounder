@@ -185,16 +185,21 @@ async function handleStatusUpdate(ctx: any, message: any) {
 }
 
 async function handleTranscript(ctx: any, message: any) {
-  const { transcript, role, call } = message;
-  console.log(`${role}: ${transcript}`);
+  const { transcript, transcriptType, role, call } = message;
 
-  // Could save conversation transcripts for later analysis
-  // await ctx.runMutation(internal.conversations.saveTranscript, {
-  //   callId: call.id,
-  //   role,
-  //   content: transcript,
-  //   timestamp: Date.now()
-  // });
+  // Only log and save final transcripts to avoid duplicates
+  if (transcriptType === 'final') {
+    console.log(`${role} (final): ${transcript}`);
+
+    // Could save conversation transcripts for later analysis
+    // await ctx.runMutation(internal.conversations.saveTranscript, {
+    //   callId: call.id,
+    //   role,
+    //   content: transcript,
+    //   timestamp: Date.now()
+    // });
+  }
+  // Ignore partial transcripts
 }
 
 async function handleCallStart(ctx: any, message: any) {

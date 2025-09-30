@@ -3,7 +3,7 @@ import Vapi from '@vapi-ai/web';
 import { Id } from "../../convex/_generated/dataModel";
 
 interface VoiceChatOptions {
-  profileOwnerId: Id<"users">;
+  profileOwnerId: Id<"profiles">;
   profileOwnerName: string;
   onTranscript?: (transcript: string, role: 'user' | 'assistant') => void;
   onMessage?: (message: string) => void;
@@ -81,18 +81,22 @@ export function useVoiceChat({
 
       vapi.on('message', (message: any) => {
         if (message.type === 'transcript') {
-          const transcript = {
-            role: message.role as 'user' | 'assistant',
-            text: message.transcript,
-            timestamp: Date.now()
-          };
+          // Only process final transcripts to avoid duplicates
+          if (message.transcriptType === 'final') {
+            const transcript = {
+              role: message.role as 'user' | 'assistant',
+              text: message.transcript,
+              timestamp: Date.now()
+            };
 
-          setState(prev => ({
-            ...prev,
-            transcript: [...prev.transcript, transcript]
-          }));
+            setState(prev => ({
+              ...prev,
+              transcript: [...prev.transcript, transcript]
+            }));
 
-          onTranscript?.(message.transcript, message.role);
+            onTranscript?.(message.transcript, message.role);
+          }
+          // Ignore partial transcripts to prevent duplicates
         }
 
         if (message.type === 'function-call') {
