@@ -17,19 +17,33 @@ export function SignInForm() {
 
     try {
       if (flow === "signIn") {
-        await authClient.signIn.email({
+        const result = await authClient.signIn.email({
           email,
           password,
         });
+
+        if (result.error) {
+          throw new Error(result.error.message || "Sign in failed");
+        }
+
         toast.success("Signed in successfully!");
+        // Small delay to ensure session is established
+        await new Promise(resolve => setTimeout(resolve, 500));
         window.location.href = "https://founder.buddytools.org/app";
       } else {
-        await authClient.signUp.email({
+        const result = await authClient.signUp.email({
           email,
           password,
           name: email.split("@")[0], // Use email prefix as default name
         });
+
+        if (result.error) {
+          throw new Error(result.error.message || "Sign up failed");
+        }
+
         toast.success("Account created successfully!");
+        // Small delay to ensure session is established
+        await new Promise(resolve => setTimeout(resolve, 500));
         window.location.href = "https://founder.buddytools.org/app";
       }
     } catch (error: any) {

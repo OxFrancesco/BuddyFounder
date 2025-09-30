@@ -5,10 +5,7 @@ import { authClient } from "./lib/auth-client";
 import "./index.css";
 import App from "./App";
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string, {
-  // Optionally pause queries until the user is authenticated
-  expectAuth: true,
-});
+const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
 createRoot(document.getElementById("root")!).render(
   <ConvexBetterAuthProvider client={convex} authClient={authClient}>
